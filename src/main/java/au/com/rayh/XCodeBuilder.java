@@ -193,6 +193,14 @@ public class XCodeBuilder extends Builder {
      */
     public final String keychainTimeout;
 
+    /*
+     * This is a work around for the broken Apple script as documented here:
+     http://stackoverflow.com/questions/32504355/error-itms-90339-this-bundle-is-invalid-the-info-plist-contains-an-invalid-ke
+     http://stackoverflow.com/questions/32763288/ios-builds-ipa-creation-no-longer-works-from-the-command-line/32845990#32845990
+     http://cutting.io/posts/packaging-ios-apps-from-the-command-line/
+     */
+    public final Boolean signIpaOnXcrun;
+
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
     public XCodeBuilder(Boolean buildIpa, Boolean generateArchive, Boolean cleanBeforeBuild, Boolean cleanTestReports, String configuration,
@@ -201,7 +209,8 @@ public class XCodeBuilder extends Builder {
     		String keychainName, String keychainPath, String keychainPwd, String symRoot, String xcodeWorkspaceFile,
     		String xcodeSchema, String configurationBuildDir, String codeSigningIdentity, Boolean allowFailingBuildResults,
     		String ipaName, Boolean provideApplicationVersion, String ipaOutputDirectory, Boolean changeBundleID, String bundleID,
-    		String bundleIDInfoPlistPath, String ipaManifestPlistUrl, Boolean interpretTargetAsRegEx, String keychainTimeout) {
+    		String bundleIDInfoPlistPath, String ipaManifestPlistUrl, Boolean interpretTargetAsRegEx, String keychainTimeout,
+        Boolean signIpaOnXcrun) {
         this.buildIpa = buildIpa;
         this.generateArchive = generateArchive;
         this.sdk = sdk;
@@ -234,6 +243,7 @@ public class XCodeBuilder extends Builder {
         this.interpretTargetAsRegEx = interpretTargetAsRegEx;
         this.ipaManifestPlistUrl = ipaManifestPlistUrl;
         this.keychainTimeout = keychainTimeout;
+        this.signIpaOnXcrun = signIpaOnXcrun;
     }
 
     @SuppressWarnings("unused")
@@ -732,7 +742,7 @@ public class XCodeBuilder extends Builder {
                     packageCommandLine.add("--embed");
                     packageCommandLine.add(embeddedProfileFile);
                 }
-                if (!StringUtils.isEmpty(codeSigningIdentity)) {
+                if (!StringUtils.isEmpty(codeSigningIdentity) && signIpaOnXcrun) {
                     packageCommandLine.add("--sign");
                     packageCommandLine.add(codeSigningIdentity);
                 }
